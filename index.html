@@ -1,399 +1,422 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soul Bake. Zamboanga | Premium Breads & Pastries</title>
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
-    
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-    <style>
-        :root {
-            --primary-cream: #FAF3E0;
-            --warm-brown: #3B1F0C;
-            --accent-caramel: #C8843A;
-            --deep-espresso: #2C1503;
-            --off-white: #FFFDF8;
-            --muted-blush: #F5E6D3;
-            --text-gray: #5C4033;
-            --star-gold: #F4B942;
-            --nav-height: 90px;
-            --transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
-        html { scroll-behavior: smooth; }
-        body { font-family: 'Lato', sans-serif; background-color: var(--off-white); color: var(--text-gray); line-height: 1.7; overflow-x: hidden; }
-
-        h1, h2, h3, h4 { font-family: 'Playfair Display', serif; color: var(--warm-brown); font-weight: 700; line-height: 1.2; }
-        .label { font-family: 'Cormorant Garamond', serif; font-variant: small-caps; letter-spacing: 0.15em; color: var(--accent-caramel); font-weight: 600; display: block; margin-bottom: 1rem; font-size: 0.9rem; }
-        .container { max-width: 1300px; margin: 0 auto; padding: 0 5%; }
-        section { padding: 100px 0; position: relative; opacity: 1; transition: opacity 1s ease; }
-
-        /* REVEAL SYSTEM FIX: Start visible, then hide if JS is active */
-        .js-enabled .reveal { opacity: 0; transform: translateY(30px); }
-        .js-enabled .reveal.active { opacity: 1; transform: translateY(0); }
-
-        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 16px 32px; text-decoration: none; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; transition: var(--transition); cursor: pointer; border: none; gap: 10px; }
-        .btn-espresso { background: var(--deep-espresso); color: white; }
-        .btn-espresso:hover { background: var(--accent-caramel); transform: translateY(-3px); }
-        .btn-outline { border: 1px solid var(--deep-espresso); color: var(--deep-espresso); background: transparent; }
-        .btn-outline:hover { background: var(--deep-espresso); color: white; }
-
-        /* NAVIGATION */
-        nav { position: fixed; top: 0; left: 0; width: 100%; height: var(--nav-height); z-index: 1000; display: flex; align-items: center; transition: var(--transition); background: var(--primary-cream); }
-        nav.scrolled { height: 70px; background: rgba(250, 243, 224, 0.95); backdrop-filter: blur(10px); box-shadow: 0 4px 30px rgba(0,0,0,0.05); }
-        nav .container { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-        .logo { text-decoration: none; }
-        .logo h1 { font-size: 1.6rem; line-height: 1; color: var(--warm-brown); }
-        .logo h1 span { color: var(--accent-caramel); }
-        .logo p { font-size: 0.55rem; letter-spacing: 3px; text-transform: uppercase; color: var(--text-gray); margin-top: 2px; }
-        .nav-links { display: flex; gap: 30px; }
-        .nav-links a { text-decoration: none; color: var(--warm-brown); font-size: 0.85rem; font-weight: 700; }
-        .nav-right { display: flex; align-items: center; gap: 20px; }
-        .icon-btn { background: none; border: none; cursor: pointer; position: relative; color: var(--warm-brown); }
-        .cart-badge { position: absolute; top: -8px; right: -10px; background: #E63946; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-weight: 700; }
-
-        /* HERO */
-        #hero { min-height: 100vh; background: var(--primary-cream); display: flex; align-items: center; padding-top: var(--nav-height); }
-        .hero-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 60px; align-items: center; }
-        .hero-content h2 { font-size: clamp(2.5rem, 6vw, 5rem); font-style: italic; margin-bottom: 1.5rem; }
-        .badge-box { position: relative; width: 130px; height: 130px; cursor: pointer; }
-        .spinning-badge { width: 100%; height: 100%; animation: rotate 10s linear infinite; }
-        .spinning-badge text { fill: var(--warm-brown); font-size: 12px; font-family: 'Cormorant Garamond'; letter-spacing: 3px; text-transform: uppercase; }
-        .badge-arrow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: var(--deep-espresso); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .hero-visual .visual-main { width: 100%; aspect-ratio: 1; background: radial-gradient(circle, #8B5E3C, #3B1F0C); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; box-shadow: 20px 20px 60px rgba(0,0,0,0.1); }
-        .hero-visual span { font-size: 6rem; margin-bottom: 1rem; }
-
-        /* MENU & TABS */
-        .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 40px; flex-wrap: wrap; }
-        .tab-btn { padding: 10px 20px; border-radius: 50px; border: 1px solid var(--muted-blush); background: white; cursor: pointer; font-size: 0.8rem; }
-        .tab-btn.active { background: var(--accent-caramel); color: white; border-color: var(--accent-caramel); }
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
-        .product-card { background: white; padding: 20px; border: 1px solid transparent; transition: var(--transition); }
-        .product-card:hover { border-color: var(--muted-blush); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .img-placeholder { width: 100%; aspect-ratio: 1; background: var(--primary-cream); display: flex; align-items: center; justify-content: center; font-size: 3.5rem; margin-bottom: 15px; }
-        .stars { color: var(--star-gold); font-size: 0.8rem; margin-bottom: 10px; }
-        .price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .price { font-weight: 700; color: var(--accent-caramel); }
-
-        /* DRAWER & MODALS */
-        .overlay-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 2000; opacity: 0; visibility: hidden; transition: 0.4s; }
-        .overlay-bg.active { opacity: 1; visibility: visible; }
-        .drawer { position: fixed; top: 0; right: 0; width: 400px; height: 100%; background: var(--off-white); z-index: 2001; transform: translateX(100%); transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1); display: flex; flex-direction: column; }
-        .drawer.active { transform: translateX(0); }
-        @media (max-width: 480px) { .drawer { width: 100%; } }
-        .drawer-header { padding: 25px; border-bottom: 1px solid var(--muted-blush); display: flex; justify-content: space-between; align-items: center; }
-        .drawer-content { flex: 1; padding: 25px; overflow-y: auto; }
-        .drawer-footer { padding: 25px; background: white; border-top: 1px solid var(--muted-blush); }
-
-        .cart-item { display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--off-white); padding-bottom: 15px; }
-        .cart-item-emoji { font-size: 2rem; background: var(--primary-cream); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; }
-
-        /* BRANCHES */
-        .branch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
-        .branch-card { background: var(--muted-blush); padding: 40px; border-top: 4px solid var(--accent-caramel); }
-        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; margin-bottom: 15px; }
-        .status-open { background: #D8F3DC; color: #1B4332; }
-        .status-closed { background: #FFD6D6; color: #800000; }
-        .hours-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px; opacity: 0.7; }
-        .hours-row.active-day { font-weight: 700; opacity: 1; color: var(--warm-brown); }
-
-        /* TOAST */
-        #toastContainer { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-        .toast { background: white; padding: 12px 20px; border-left: 4px solid var(--accent-caramel); box-shadow: 0 5px 15px rgba(0,0,0,0.1); font-size: 0.85rem; font-weight: 700; transform: translateX(120%); transition: 0.4s; display: flex; align-items: center; gap: 10px; }
-        .toast.active { transform: translateX(0); }
-
-        footer { background: var(--deep-espresso); color: white; padding: 80px 0 40px; }
-        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; }
-        
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @media (max-width: 768px) { .hero-grid, .branch-grid { grid-template-columns: 1fr; } .nav-links { display: none; } }
-    </style>
-</head>
-<body class="js-enabled">
-
-    <!-- Navigation -->
-    <nav id="navbar">
-        <div class="container">
-            <a href="#" class="logo">
-                <h1>Soul Bake<span>.</span></h1>
-                <p>Zamboanga</p>
-            </a>
-            <div class="nav-links">
-                <a href="#hero">Home</a>
-                <a href="#about">About</a>
-                <a href="#menu">Menu</a>
-                <a href="#branches">Branches</a>
-                <a href="#contact">Contact</a>
-            </div>
-            <div class="nav-right">
-                <button class="icon-btn" id="openCart">
-                    <i data-lucide="shopping-bag"></i>
-                    <span class="cart-badge" id="cartBadge">0</span>
-                </button>
-            </div>
+<!-- Navigation -->
+<nav id="navbar">
+    <div class="container">
+        <a href="#" class="logo">
+            <h1>Soul Bake<span>.</span></h1>
+            <p>Zamboanga</p>
+        </a>
+        <div class="nav-links">
+            <a href="#hero">Home</a>
+            <a href="#about">About</a>
+            <a href="#menu">Menu</a>
+            <a href="#branches">Branches</a>
+            <a href="#contact">Contact</a>
         </div>
-    </nav>
-
-    <!-- Hero -->
-    <section id="hero">
-        <div class="container hero-grid">
-            <div class="hero-content reveal">
-                <span class="label">Freshly Baked Daily • Zamboanga City</span>
-                <h2>Your Daily Dose of Freshness</h2>
-                <p>Premium breads, cakes and pastries — made from scratch with love in our neighborhood kitchen.</p>
-                <div class="badge-box" onclick="document.getElementById('menu').scrollIntoView()">
-                    <svg class="spinning-badge" viewBox="0 0 100 100">
-                        <defs><path id="circle" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" /></defs>
-                        <text><textPath xlink:href="#circle">SHOP NOW • ORDER NOW • BAKE WITH SOUL •</textPath></text>
-                    </svg>
-                    <div class="badge-arrow"><i data-lucide="arrow-down"></i></div>
-                </div>
-            </div>
-            <div class="hero-visual reveal">
-                <div class="visual-main">
-                    <span>🥐</span>
-                    <h3>Soul Bake.</h3>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Menu -->
-    <section id="menu">
-        <div class="container">
-            <div style="text-align: center; margin-bottom: 50px;">
-                <span class="label">Neighborhood Favorites</span>
-                <h2 style="font-size: 2.5rem; font-style: italic;">The Menu</h2>
-            </div>
-            <div class="tabs reveal">
-                <button class="tab-btn active" data-filter="All">All</button>
-                <button class="tab-btn" data-filter="Breads">Breads</button>
-                <button class="tab-btn" data-filter="Pastries">Pastries</button>
-                <button class="tab-btn" data-filter="Cakes">Cakes</button>
-                <button class="tab-btn" data-filter="Drinks">Drinks</button>
-            </div>
-            <div class="product-grid" id="productGrid">
-                <!-- JS Populated -->
-            </div>
-        </div>
-    </section>
-
-    <!-- About -->
-    <section id="about" style="background: var(--off-white);">
-        <div class="container reveal" style="text-align: center; max-width: 800px;">
-            <span class="label">Our Story</span>
-            <h2 style="font-size: 2.5rem; font-style: italic; margin-bottom: 20px;">Tradition in Every Bite</h2>
-            <p>Every loaf, croissant, and cookie is a labor of love. We use traditional techniques and the finest local ingredients to bring the soul of baking to Zamboanga City.</p>
-            <div style="display: flex; justify-content: center; gap: 40px; margin-top: 40px;">
-                <div><h3 style="font-size: 2rem;">2</h3><p class="label">Branches</p></div>
-                <div><h3 style="font-size: 2rem;">100%</h3><p class="label">Fresh</p></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Branches -->
-    <section id="branches" style="background: var(--primary-cream);">
-        <div class="container">
-            <div style="text-align: center; margin-bottom: 50px;">
-                <span class="label">Find Us</span>
-                <h2 style="font-size: 2.5rem; font-style: italic;">Our Locations</h2>
-            </div>
-            <div class="branch-grid" id="branchGrid">
-                <!-- JS Populated -->
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer id="contact">
-        <div class="container footer-grid">
-            <div>
-                <h1>Soul Bake<span>.</span></h1>
-                <p style="opacity: 0.6; margin-top: 10px;">Premium Breads & Pastries<br>Zamboanga City, Philippines</p>
-            </div>
-            <div>
-                <p style="font-weight: 700; margin-bottom: 15px;">Contact</p>
-                <p style="opacity: 0.7;">+63 909 808 0880</p>
-                <p style="opacity: 0.7;">soulbakezbg@gmail.com</p>
-            </div>
-            <div>
-                <p style="font-weight: 700; margin-bottom: 15px;">Socials</p>
-                <a href="#" style="color: white; margin-right: 15px;"><i data-lucide="facebook"></i></a>
-                <a href="#" style="color: white;"><i data-lucide="instagram"></i></a>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Cart Drawer -->
-    <div class="overlay-bg" id="overlay"></div>
-    <div class="drawer" id="cartDrawer">
-        <div class="drawer-header">
-            <h3>Your Order</h3>
-            <button class="icon-btn" id="closeCart"><i data-lucide="x"></i></button>
-        </div>
-        <div class="drawer-content" id="cartItems"></div>
-        <div class="drawer-footer">
-            <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.2rem;">
-                <span>Total</span>
-                <span id="cartTotal">₱0.00</span>
-            </div>
-            <button class="btn btn-espresso" style="width: 100%; margin-top: 20px;">Checkout</button>
+        <div class="nav-right">
+            <button class="icon-btn" id="openCart">
+                <i data-lucide="shopping-bag"></i>
+                <span class="cart-badge" id="cartBadge">0</span>
+            </button>
         </div>
     </div>
+</nav>
 
-    <div id="toastContainer"></div>
+<!-- Hero -->
+<section id="hero">
+    <div class="container hero-grid">
+        <div class="hero-content reveal">
+            <span class="label">Freshly Baked Daily • Zamboanga City</span>
+            <h2>Your Daily Dose of Freshness</h2>
+            <p>Premium breads, cakes and pastries — made from scratch with love in our neighborhood kitchen.</p>
+            <div class="badge-box" onclick="document.getElementById('menu').scrollIntoView()">
+                <svg class="spinning-badge" viewBox="0 0 100 100">
+                    <defs><path id="circle" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" /></defs>
+                    <text><textPath xlink:href="#circle">SHOP NOW • ORDER NOW • BAKE WITH SOUL •</textPath></text>
+                </svg>
+                <div class="badge-arrow"><i data-lucide="arrow-down"></i></div>
+            </div>
+        </div>
+        <div class="hero-visual reveal">
+            <div class="visual-main">
+                <span>🥐</span>
+                <h3>Soul Bake.</h3>
+            </div>
+        </div>
+    </div>
+</section>
 
-    <script>
-        const PRODUCTS = [
-            { id: 1, name: "Crinkle Cookies", price: 85, cat: "Cookies", emoji: "🍪" },
-            { id: 2, name: "Butter Croissant", price: 95, cat: "Pastries", emoji: "🥐" },
-            { id: 3, name: "Artisan Bread Loaf", price: 120, cat: "Breads", emoji: "🍞" },
-            { id: 4, name: "Custom Layer Cake", price: 650, cat: "Cakes", emoji: "🎂" },
-            { id: 5, name: "Salted Caramel Latte", price: 110, cat: "Drinks", emoji: "☕" }
-        ];
+<!-- Menu -->
+<section id="menu">
+    <div class="container">
+        <div style="text-align: center; margin-bottom: 50px;">
+            <span class="label">Neighborhood Favorites</span>
+            <h2 style="font-size: 2.5rem; font-style: italic;">The Menu</h2>
+        </div>
+        <div class="tabs reveal">
+            <button class="tab-btn active" data-filter="All">All</button>
+            <button class="tab-btn" data-filter="Breads">Breads</button>
+            <button class="tab-btn" data-filter="Pastries">Pastries</button>
+            <button class="tab-btn" data-filter="Cakes">Cakes</button>
+            <button class="tab-btn" data-filter="Cookies">Cookies</button>
+            <button class="tab-btn" data-filter="Drinks">Drinks</button>
+        </div>
+        <div class="product-grid" id="productGrid"></div>
+    </div>
+</section>
 
-        const BRANCHES = [
-            { name: "Tumaga Branch", addr: "Veterans Avenue Ext, Tumaga", hours: { open: 10, close: 22, off: 1 } },
-            { name: "Veterans Branch", addr: "Veterans Avenue, Zamboanga City", hours: { open: 9, close: 18, off: 0 } }
-        ];
+<!-- About -->
+<section id="about" style="background: var(--off-white);">
+    <div class="container reveal" style="text-align: center; max-width: 800px;">
+        <span class="label">Our Story</span>
+        <h2 style="font-size: 2.5rem; font-style: italic; margin-bottom: 20px;">Tradition in Every Bite</h2>
+        <p>Every loaf, croissant, and cookie is a labor of love. We use traditional techniques and the finest local ingredients to bring the soul of baking to Zamboanga City. Established locally, serving daily freshness.</p>
+        <div style="display: flex; justify-content: center; gap: 60px; margin-top: 40px;">
+            <div><h3 style="font-size: 2.5rem; color: var(--accent-caramel);">2</h3><p class="label">Branches</p></div>
+            <div><h3 style="font-size: 2.5rem; color: var(--accent-caramel);">100%</h3><p class="label">Artisan</p></div>
+        </div>
+    </div>
+</section>
 
-        let cart = [];
+<!-- Branches -->
+<section id="branches" style="background: var(--primary-cream);">
+    <div class="container">
+        <div style="text-align: center; margin-bottom: 50px;">
+            <span class="label">Find Us</span>
+            <h2 style="font-size: 2.5rem; font-style: italic;">Our Locations</h2>
+        </div>
+        <div class="branch-grid" id="branchGrid"></div>
+    </div>
+</section>
 
-        function init() {
-            lucide.createIcons();
-            renderMenu('All');
-            renderBranches();
-            setupObservers();
+<!-- Footer -->
+<footer id="contact">
+    <div class="container footer-grid">
+        <div>
+            <h1>Soul Bake<span>.</span></h1>
+            <p style="opacity: 0.6; margin-top: 10px; font-size: 0.9rem;">Premium Breads & Pastries<br>Zamboanga City, Philippines</p>
+        </div>
+        <div>
+            <p style="font-weight: 700; margin-bottom: 15px;">Quick Links</p>
+            <ul style="list-style:none; opacity: 0.7; font-size: 0.9rem; line-height: 2;">
+                <li><a href="#hero" style="color:white; text-decoration:none;">Home</a></li>
+                <li><a href="#about" style="color:white; text-decoration:none;">About Us</a></li>
+                <li><a href="#menu" style="color:white; text-decoration:none;">Our Menu</a></li>
+                <li><a href="#branches" style="color:white; text-decoration:none;">Locations</a></li>
+            </ul>
+        </div>
+        <div>
+            <p style="font-weight: 700; margin-bottom: 15px;">Contact Us</p>
+            <p style="opacity: 0.7; font-size: 0.9rem; margin-bottom: 5px;">+63 909 808 0880</p>
+            <p style="opacity: 0.7; font-size: 0.9rem;">soulbakezbg@gmail.com</p>
+        </div>
+        <div>
+            <p style="font-weight: 700; margin-bottom: 15px;">Follow Us</p>
+            <div style="display: flex; gap: 15px;">
+                <a href="https://www.facebook.com/soulbakeph/" target="_blank" style="color: white;"><i data-lucide="facebook"></i></a>
+                <a href="https://www.instagram.com/soulbakeph/" target="_blank" style="color: white;"><i data-lucide="instagram"></i></a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Cart Drawer -->
+<div class="overlay-bg" id="overlay"></div>
+<div class="drawer" id="cartDrawer">
+    <div class="drawer-header">
+        <h3>Your Order</h3>
+        <button class="icon-btn" id="closeCart"><i data-lucide="x"></i></button>
+    </div>
+    <div class="drawer-content" id="cartItems"></div>
+    <div class="drawer-footer">
+        <div class="pill-toggle">
+            <input type="radio" name="drawerOrderType" id="pickupToggle" value="pickup" checked onchange="updateCart()">
+            <label for="pickupToggle">🏪 Pick-up</label>
+            <input type="radio" name="drawerOrderType" id="deliveryToggle" value="delivery" onchange="updateCart()">
+            <label for="deliveryToggle">🛵 Delivery</label>
+        </div>
+        <div id="cartTotal"></div>
+        <button class="btn btn-espresso" style="width: 100%; margin-top: 10px;" id="checkoutBtn">Proceed to Checkout →</button>
+    </div>
+</div>
+
+<!-- Modal Structure -->
+<div id="modalOverlay" class="modal-overlay"></div>
+<div id="orderModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <button id="closeModal" class="modal-close" aria-label="Close">
+    <i data-lucide="x"></i>
+  </button>
+  <div id="modalBody"></div>
+</div>
+
+<div id="toastContainer"></div>
+
+<script>
+    const FORMSPREE_ORDER_URL = "https://formspree.io/f/xlgoarzy";
+    const FORMSPREE_NEWSLETTER_URL = "https://formspree.io/f/xdapynrb";
+
+    const PRODUCTS = [
+        { id: 1,  name: "Crinkle Cookies",        price: 85,  cat: "Cookies",   emoji: "🍪", stars: 5 },
+        { id: 2,  name: "Butter Croissant",        price: 95,  cat: "Pastries",  emoji: "🥐", stars: 5 },
+        { id: 3,  name: "Artisan Bread Loaf",      price: 120, cat: "Breads",    emoji: "🍞", stars: 5 },
+        { id: 4,  name: "Custom Layer Cake",       price: 650, cat: "Cakes",     emoji: "🎂", stars: 5 },
+        { id: 5,  name: "Chocolate Muffin",        price: 80,  cat: "Pastries",  emoji: "🧁", stars: 4 },
+        { id: 6,  name: "Salted Caramel Latte",    price: 110, cat: "Drinks",    emoji: "☕", stars: 4 },
+        { id: 7,  name: "Glazed Donut",            price: 65,  cat: "Pastries",  emoji: "🍩", stars: 5 },
+        { id: 8,  name: "Choco Crinkle Cake",      price: 580, cat: "Cakes",     emoji: "🍫", stars: 5 },
+        { id: 9,  name: "Sourdough Loaf",          price: 145, cat: "Breads",    emoji: "🥖", stars: 4 },
+        { id: 10, name: "Americano",               price: 90,  cat: "Drinks",    emoji: "☕", stars: 4 },
+        { id: 11, name: "Oatmeal Raisin Cookie",   price: 75,  cat: "Cookies",   emoji: "🍪", stars: 4 },
+        { id: 12, name: "Red Velvet Cupcake",      price: 95,  cat: "Pastries",  emoji: "🧁", stars: 5 },
+    ];
+
+    const BRANCH_DATA = [
+        {
+            name: "Tumaga Branch",
+            addr: "Veterans Avenue Extension, Tumaga (fronting Budgetwise Sta. Maria), Zamboanga City",
+            phone: "+63 909 808 0880",
+            mapsUrl: "https://www.google.com/maps/search/?api=1&query=Soul+Bake+Tumaga+Zamboanga+City",
+            schedule: [
+                { day: 0, open: 13, close: 22, label: "Sunday" },
+                { day: 1, open: null, close: null, label: "Monday" },
+                { day: 2, open: 10, close: 22, label: "Tuesday" },
+                { day: 3, open: 10, close: 22, label: "Wednesday" },
+                { day: 4, open: 10, close: 22, label: "Thursday" },
+                { day: 5, open: 10, close: 22, label: "Friday" },
+                { day: 6, open: 10, close: 22, label: "Saturday" },
+            ]
+        },
+        {
+            name: "Veterans Branch",
+            addr: "Veterans Avenue, Zamboanga City, Philippines",
+            phone: "+63 909 808 0880",
+            mapsUrl: "https://www.google.com/maps/search/?api=1&query=Soul+Bake+Veterans+Avenue+Zamboanga+City",
+            schedule: [
+                { day: 0, open: null, close: null, label: "Sunday" },
+                { day: 1, open: 9,  close: 18, label: "Monday" },
+                { day: 2, open: 9,  close: 18, label: "Tuesday" },
+                { day: 3, open: 9,  close: 18, label: "Wednesday" },
+                { day: 4, open: 9,  close: 18, label: "Thursday" },
+                { day: 5, open: 9,  close: 18, label: "Friday" },
+                { day: 6, open: 11, close: 20, label: "Saturday" },
+            ]
         }
+    ];
 
-        function renderMenu(filter) {
-            const grid = document.getElementById('productGrid');
-            grid.innerHTML = '';
-            const items = filter === 'All' ? PRODUCTS : PRODUCTS.filter(p => p.cat === filter);
-            items.forEach(p => {
-                grid.innerHTML += `
-                    <div class="product-card reveal active">
-                        <div class="img-placeholder">${p.emoji}</div>
-                        <h4>${p.name}</h4>
-                        <div class="price-row">
-                            <span class="price">₱${p.price.toFixed(2)}</span>
-                        </div>
-                        <button class="btn btn-espresso" style="width:100%" onclick="addToCart(${p.id})">Add to Order</button>
-                    </div>
-                `;
-            });
-        }
+    let cart = JSON.parse(localStorage.getItem('soulbake_cart') || '{}');
 
-        function addToCart(id) {
-            const p = PRODUCTS.find(i => i.id === id);
-            cart.push(p);
-            updateCart();
-            showToast(`Added ${p.name}`);
-        }
+    function init() {
+        lucide.createIcons();
+        renderMenu('All');
+        renderBranches();
+        updateCart();
+        setupObservers();
+    }
 
-        function updateCart() {
-            const badge = document.getElementById('cartBadge');
-            const items = document.getElementById('cartItems');
-            const total = document.getElementById('cartTotal');
-            
-            badge.innerText = cart.length;
-            badge.style.display = cart.length > 0 ? 'flex' : 'none';
-            
-            items.innerHTML = cart.map((item, idx) => `
+    function renderMenu(filter) {
+        const grid = document.getElementById('productGrid');
+        const items = filter === 'All' ? PRODUCTS : PRODUCTS.filter(p => p.cat === filter);
+        grid.innerHTML = items.map(p => {
+            const stars = '★'.repeat(p.stars) + '☆'.repeat(5 - p.stars);
+            return `
+                <div class="product-card reveal" id="card-${p.id}">
+                    <div class="img-placeholder">${p.emoji}</div>
+                    <div class="stars">${stars}</div>
+                    <h4 style="margin-bottom: 8px;">${p.name}</h4>
+                    <div class="price-row"><span class="price">₱${p.price.toFixed(2)}</span></div>
+                    <button class="btn btn-espresso" style="width:100%" onclick="addToCart(${p.id})">Add to Order</button>
+                </div>
+            `;
+        }).join('');
+        setupObservers();
+    }
+
+    function addToCart(id) {
+        const p = PRODUCTS.find(i => i.id === id);
+        if (cart[id]) cart[id].qty += 1;
+        else cart[id] = { ...p, qty: 1 };
+        saveCart();
+        updateCart();
+        showToast(`${p.emoji} ${p.name} added!`, 'success');
+        const card = document.getElementById(`card-${id}`);
+        if (card) { card.style.borderColor = 'var(--accent-caramel)'; setTimeout(() => card.style.borderColor = '', 800); }
+    }
+
+    function changeQty(id, delta) {
+        if (!cart[id]) return;
+        cart[id].qty += delta;
+        if (cart[id].qty <= 0) delete cart[id];
+        saveCart();
+        updateCart();
+    }
+
+    function removeItem(id) { delete cart[id]; saveCart(); updateCart(); }
+    function saveCart() { localStorage.setItem('soulbake_cart', JSON.stringify(cart)); }
+    function getTotalQty() { return Object.values(cart).reduce((s, i) => s + i.qty, 0); }
+    function getSubtotal() { return Object.values(cart).reduce((s, i) => s + i.price * i.qty, 0); }
+
+    function updateCart() {
+        const badge = document.getElementById('cartBadge');
+        const itemsCont = document.getElementById('cartItems');
+        const entries = Object.values(cart);
+        const totalQty = getTotalQty();
+        const subtotal = getSubtotal();
+
+        badge.textContent = totalQty;
+        badge.style.display = totalQty > 0 ? 'flex' : 'none';
+
+        if (entries.length === 0) {
+            itemsCont.innerHTML = `<div style="text-align:center; padding: 60px 20px;"><div style="font-size: 4rem; margin-bottom: 15px;">🥐</div><p style="font-weight: 700; margin-bottom: 10px;">Your order is empty</p><a href="#menu" style="color: var(--accent-caramel); font-weight: 700; text-decoration:none;" onclick="closeDrawer()">Browse our menu →</a></div>`;
+        } else {
+            itemsCont.innerHTML = entries.map(item => `
                 <div class="cart-item">
                     <div class="cart-item-emoji">${item.emoji}</div>
-                    <div style="flex:1">
-                        <p style="font-weight:700">${item.name}</p>
-                        <p style="color:var(--accent-caramel)">₱${item.price.toFixed(2)}</p>
+                    <div style="flex: 1; min-width: 0;">
+                        <p style="font-weight: 700; font-size: 0.9rem;">${item.name}</p>
+                        <p style="color: var(--accent-caramel); font-size: 0.85rem;">₱${item.price.toFixed(2)} each</p>
+                        <div class="qty-stepper">
+                            <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
+                            <span style="font-weight: 700; min-width: 20px; text-align: center;">${item.qty}</span>
+                            <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+                        </div>
                     </div>
-                    <button onclick="removeItem(${idx})" style="background:none; border:none; cursor:pointer">×</button>
+                    <div style="text-align: right;">
+                        <button onclick="removeItem(${item.id})" style="background:none; border:none; color:#999; cursor:pointer; font-size:1.4rem;">×</button>
+                        <p style="font-weight: 700; font-size: 0.9rem; margin-top: 10px;">₱${(item.price * item.qty).toFixed(2)}</p>
+                    </div>
                 </div>
             `).join('');
-            
-            const sum = cart.reduce((s, i) => s + i.price, 0);
-            total.innerText = `₱${sum.toFixed(2)}`;
         }
 
-        function removeItem(idx) {
-            cart.splice(idx, 1);
-            updateCart();
-        }
+        const isDelivery = document.getElementById('deliveryToggle').checked;
+        const deliveryFee = isDelivery ? 50 : 0;
+        const total = subtotal + deliveryFee;
 
-        function renderBranches() {
-            const grid = document.getElementById('branchGrid');
-            const now = new Date();
-            const hour = now.getHours();
-            const day = now.getDay();
+        document.getElementById('cartTotal').innerHTML = `
+            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; opacity: 0.7;"><span>Subtotal</span><span>₱${subtotal.toFixed(2)}</span></div>
+                <div style="display: flex; justify-content: space-between; opacity: 0.7;"><span>Delivery</span><span style="color:${deliveryFee ? 'inherit' : '#40916C'}">${deliveryFee ? '₱50.00' : 'Free'}</span></div>
+                <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.1rem; border-top: 1px solid var(--muted-blush); padding-top: 10px;"><span>Total</span><span style="color: var(--accent-caramel);">₱${total.toFixed(2)}</span></div>
+            </div>
+        `;
+    }
 
-            BRANCHES.forEach(b => {
-                const isOpen = day !== b.hours.off && hour >= b.hours.open && hour < b.hours.close;
-                grid.innerHTML += `
-                    <div class="branch-card reveal active">
-                        <span class="status-badge ${isOpen ? 'status-open' : 'status-closed'}">
-                            ${isOpen ? '● Open Now' : '● Closed'}
-                        </span>
-                        <h3>${b.name}</h3>
-                        <p style="opacity:0.7; margin: 10px 0;">${b.addr}</p>
-                        <div class="hours-row"><span>Hours:</span><span>${b.hours.open}:00 - ${b.hours.close}:00</span></div>
-                    </div>
-                `;
-            });
-        }
+    function openDrawer() { document.getElementById('cartDrawer').classList.add('active'); document.getElementById('overlay').classList.add('active'); document.body.style.overflow = 'hidden'; }
+    function closeDrawer() { document.getElementById('cartDrawer').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); document.body.style.overflow = ''; }
+    
+    document.getElementById('openCart').onclick = openDrawer;
+    document.getElementById('closeCart').onclick = closeDrawer;
+    document.getElementById('overlay').onclick = closeDrawer;
+    document.getElementById('checkoutBtn').onclick = () => { if (getTotalQty() === 0) { showToast('Your order is empty!', 'info'); return; } closeDrawer(); setTimeout(openModal, 300); };
 
-        function showToast(msg) {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerHTML = `<span>✓</span> ${msg}`;
-            container.appendChild(toast);
-            setTimeout(() => toast.classList.add('active'), 10);
-            setTimeout(() => {
-                toast.classList.remove('active');
-                setTimeout(() => toast.remove(), 500);
-            }, 3000);
-        }
+    function openModal() { document.getElementById('modalOverlay').classList.add('active'); document.getElementById('orderModal').classList.add('active'); renderModalForm(); lucide.createIcons(); }
+    function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); document.getElementById('orderModal').classList.remove('active'); }
+    document.getElementById('modalOverlay').onclick = closeModal;
+    document.getElementById('closeModal').onclick = closeModal;
 
-        function setupObservers() {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) entry.target.classList.add('active');
-                });
-            }, { threshold: 0.1 });
-            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-        }
+    function renderModalForm() {
+        const entries = Object.values(cart);
+        const subtotal = getSubtotal();
+        const isDeliveryMode = document.getElementById('deliveryToggle').checked;
 
-        // Event Listeners
-        document.getElementById('openCart').onclick = () => {
-            document.getElementById('cartDrawer').classList.add('active');
-            document.getElementById('overlay').classList.add('active');
-        };
-        document.getElementById('closeCart').onclick = () => {
-            document.getElementById('cartDrawer').classList.remove('active');
-            document.getElementById('overlay').classList.remove('active');
-        };
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.onclick = (e) => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                renderMenu(e.target.dataset.filter);
-            };
+        const orderRowsHTML = entries.map(i => `<tr><td>${i.emoji} ${i.name}</td><td style="text-align:center">${i.qty}</td><td style="text-align:right">₱${(i.price * i.qty).toFixed(2)}</td></tr>`).join('');
+        const orderSummaryText = entries.map(i => `${i.name} x${i.qty} — ₱${(i.price * i.qty).toFixed(2)}`).join('\n');
+
+        document.getElementById('modalBody').innerHTML = `
+            <h2 id="modalTitle" style="font-style:italic; margin-bottom:10px;">Complete Your Order</h2>
+            <form id="orderForm" novalidate>
+                <input type="hidden" name="order_summary" id="hiddenOrderSummary" value="${orderSummaryText}">
+                <input type="hidden" name="order_type" id="hiddenOrderType" value="${isDeliveryMode ? 'Delivery' : 'Pick-up'}">
+                <input type="hidden" name="order_total" value="₱${(subtotal + (isDeliveryMode ? 50 : 0)).toFixed(2)}">
+                <div class="form-group"><label>Full Name *</label><input type="text" id="custName" name="customer_name" required></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Phone Number *</label><input type="tel" id="custPhone" name="customer_phone" placeholder="09XX-XXX-XXXX" required></div>
+                    <div class="form-group"><label>Email *</label><input type="email" id="custEmail" name="_replyto" required></div>
+                </div>
+                <div class="form-group"><label>Order Type</label><div class="pill-toggle" style="background:#fff; border:1px solid var(--muted-blush);"><input type="radio" name="modal_type" id="mPick" value="Pick-up" ${!isDeliveryMode ? 'checked' : ''}><label for="mPick">Pick-up</label><input type="radio" name="modal_type" id="mDel" value="Delivery" ${isDeliveryMode ? 'checked' : ''}><label for="mDel">Delivery</label></div></div>
+                <div id="modalAddrGroup" class="form-group" style="display:${isDeliveryMode ? 'block' : 'none'}"><label>Address *</label><textarea id="custAddr" name="address" rows="2"></textarea></div>
+                <div class="form-group"><label>Branch</label><select name="branch"><option>Tumaga Branch</option><option>Veterans Branch</option></select></div>
+                <div class="form-row"><div class="form-group"><label>Date *</label><input type="date" id="prefDate" name="date" required></div><div class="form-group"><label>Time *</label><input type="time" name="time" required></div></div>
+                <div style="background:var(--primary-cream); padding:20px; margin-bottom:20px;"><table class="order-summary-table"><thead><tr><th>Item</th><th style="text-align:center">Qty</th><th style="text-align:right">Price</th></tr></thead><tbody>${orderRowsHTML}</tbody></table><div style="text-align:right; font-weight:700;">Total: ₱${(subtotal + (isDeliveryMode ? 50 : 0)).toFixed(2)}</div></div>
+                <button type="submit" class="btn btn-espresso" id="placeBtn" style="width:100%">Place Order →</button>
+                <div id="fErr" style="display:none; color:red; text-align:center; margin-top:15px;">Error placing order. Please call us.</div>
+            </form>
+        `;
+
+        document.querySelectorAll('input[name="modal_type"]').forEach(r => r.onchange = (e) => {
+            const isDel = e.target.value === 'Delivery';
+            document.getElementById('modalAddrGroup').style.display = isDel ? 'block' : 'none';
+            document.getElementById('hiddenOrderType').value = e.target.value;
         });
 
-        window.onscroll = () => {
-            const nav = document.getElementById('navbar');
-            if (window.scrollY > 50) nav.classList.add('scrolled');
-            else nav.classList.remove('scrolled');
+        document.getElementById('orderForm').onsubmit = async function(e) {
+            e.preventDefault();
+            let v = true;
+            ['custName', 'custPhone', 'custEmail', 'prefDate'].forEach(id => {
+                const f = document.getElementById(id);
+                if (!f.value.trim()) { f.classList.add('invalid', 'shake'); setTimeout(()=>f.classList.remove('shake'), 400); v = false; }
+            });
+            if (!v) return;
+            const b = document.getElementById('placeBtn'); b.disabled = true; b.innerText = 'Sending...';
+            try {
+                const r = await fetch(FORMSPREE_ORDER_URL, { method: 'POST', body: new FormData(this), headers: { 'Accept': 'application/json' } });
+                if (r.ok) {
+                    document.getElementById('modalBody').innerHTML = `<div class="success-state"><span class="success-icon">✓</span><h2>Order Received!</h2><p>Thank you! We'll contact you soon.</p><button class="btn btn-espresso" style="margin-top:20px;" onclick="closeModal(); clearCart();">Done</button></div>`;
+                    localStorage.removeItem('soulbake_cart');
+                } else throw new Error();
+            } catch { b.disabled = false; b.innerText = 'Place Order →'; document.getElementById('fErr').style.display = 'block'; }
         };
+    }
 
-        init();
-    </script>
-</body>
-</html>
+    function clearCart() { cart = {}; updateCart(); }
+
+    function renderBranches() {
+        const grid = document.getElementById('branchGrid');
+        const phTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+        const today = phTime.getDay();
+        const hour = phTime.getHours() + phTime.getMinutes()/60;
+
+        grid.innerHTML = BRANCH_DATA.map(b => {
+            const daySched = b.schedule.find(s => s.day === today);
+            const isOpen = daySched && daySched.open !== null && hour >= daySched.open && hour < daySched.close;
+            return `
+                <div class="branch-card reveal">
+                    <span class="status-badge ${isOpen ? 'status-open' : 'status-closed'}">${isOpen ? '● Open Now' : '● Closed'}</span>
+                    <h3>${b.name}</h3><p style="font-size:0.85rem; opacity:0.7; margin-bottom:20px;">${b.addr}</p>
+                    <div style="margin-bottom:20px;">${b.schedule.map(s => `<div class="hours-row ${s.day === today ? 'active-day' : ''}"><span>${s.label}</span><span>${s.open ? s.open+':00 - '+s.close+':00' : 'Closed'}</span></div>`).join('')}</div>
+                    <div style="display:flex; gap:10px;"><a href="${b.mapsUrl}" target="_blank" class="btn btn-espresso" style="flex:1; padding:12px;">Directions</a><a href="tel:${b.phone}" class="btn btn-outline" style="flex:1; padding:12px;">Call</a></div>
+                </div>
+            `;
+        }).join('');
+        setupObservers();
+    }
+
+    function showToast(msg, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        const t = document.createElement('div'); t.className = 'toast';
+        t.style.borderLeftColor = type === 'error' ? '#E63946' : 'var(--accent-caramel)';
+        t.innerHTML = `<span>${type === 'success' ? '✓' : 'ℹ'}</span> ${msg}`;
+        container.appendChild(t);
+        setTimeout(() => t.classList.add('active'), 10);
+        setTimeout(() => { t.classList.remove('active'); setTimeout(() => t.remove(), 500); }, 2500);
+    }
+
+    function setupObservers() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.onclick = (e) => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active'); renderMenu(e.target.dataset.filter);
+    });
+
+    window.onscroll = () => {
+        const nav = document.getElementById('navbar');
+        if (window.scrollY > 50) nav.classList.add('scrolled');
+        else nav.classList.remove('scrolled');
+    };
+
+    init();
+</script>
