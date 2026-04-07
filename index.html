@@ -1,15 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    </head>
-<body>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         (function() {
-            'use strict';
-            const PRODUCTS = [ ... ];
+// Scope everything to a IIFE to avoid global namespace pollution
 (function() {
     'use strict';
 
@@ -133,8 +125,7 @@
 
     window.onload = init;
 })();
-        })();
+        })(); // Make sure this closing bracket and semicolon are here!
     </script>
-
 </body>
 </html>
