@@ -1,131 +1,237 @@
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soul Bake | Zamboanga City</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Lato:wght@400;700&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --primary-cream: #FAF3E0;
+            --warm-brown: #3B1F0C;
+            --accent-caramel: #C8843A;
+            --deep-espresso: #2C1503;
+            --off-white: #FFFDF8;
+            --text-gray: #5C4033;
+            --nav-height: 80px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Lato', sans-serif; background-color: var(--off-white); color: var(--text-gray); line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 5%; }
+        
+        /* Navigation */
+        nav { position: fixed; top: 0; width: 100%; height: var(--nav-height); background: var(--off-white); display: flex; align-items: center; z-index: 1000; transition: 0.3s; }
+        nav.scrolled { box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: 70px; }
+        .nav-content { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .logo h1 { font-family: 'Playfair Display', serif; color: var(--warm-brown); font-size: 1.6rem; }
+
+        /* Product Grid */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; padding: 40px 0; }
+        .card { background: white; padding: 30px; border-radius: 12px; text-align: center; transition: 0.3s; border: 1px solid rgba(0,0,0,0.05); }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .emoji { font-size: 3rem; margin-bottom: 15px; }
+        
+        /* Buttons */
+        .btn { background: var(--warm-brown); color: white; border: none; padding: 12px 25px; border-radius: 50px; cursor: pointer; font-weight: 700; transition: 0.3s; }
+        .btn:hover { background: var(--accent-caramel); }
+
+        /* Cart Drawer */
+        .cart-drawer { position: fixed; right: -400px; top: 0; width: 400px; height: 100%; background: white; z-index: 2000; transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1); padding: 30px; box-shadow: -10px 0 30px rgba(0,0,0,0.1); }
+        .cart-drawer.active { right: 0; }
+        #map { height: 400px; border-radius: 15px; margin-top: 20px; z-index: 1; }
+        
+        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--deep-espresso); color: white; padding: 12px 30px; border-radius: 50px; display: none; z-index: 3000; }
+    </style>
+</head>
+<body>
+
+    <nav id="navbar">
+        <div class="container nav-content">
+            <div class="logo"><h1>Soul<span>Bake</span></h1></div>
+            <button class="btn" onclick="document.getElementById('cartDrawer').classList.add('active')">
+                Bag (<span id="cartBadge">0</span>)
+            </button>
+        </div>
+    </nav>
+
+    <div style="height: 100px;"></div>
+
+    <section class="container">
+        <h2 style="text-align: center; font-family: 'Playfair Display'; font-size: 2.5rem;">Our Menu</h2>
+        <div id="productGrid" class="grid"></div>
+    </section>
+
+    <section class="container" style="background: var(--primary-cream); padding: 60px 0;">
+        <h2 style="text-align: center; font-family: 'Playfair Display';">Find Us</h2>
+        <div id="branchGrid" class="grid"></div>
+        <div id="map"></div>
+    </section>
+
+    <div id="cartDrawer" class="cart-drawer">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h3>Your Bag</h3>
+            <button onclick="document.getElementById('cartDrawer').classList.remove('active')" style="background:none; border:none; cursor:pointer; font-size: 1.5rem;">&times;</button>
+        </div>
+        <div id="cartItems" style="max-height: 60vh; overflow-y: auto;"></div>
+        <hr style="margin: 20px 0; opacity: 0.1;">
+        <div style="display: flex; justify-content: space-between; font-weight: 700;">
+            <span>Total</span>
+            <span id="cartTotal">₱0.00</span>
+        </div>
+        
+        <form id="orderForm" action="https://formspree.io/f/YOUR_ID_HERE" method="POST" style="margin-top: 20px;">
+            <input type="hidden" name="items" id="formItems">
+            <input type="hidden" name="total" id="formTotal">
+            <input type="text" name="name" placeholder="Your Name" required style="width:100%; padding: 10px; margin-bottom: 10px;">
+            <button type="submit" class="btn" style="width:100%;">Checkout Now</button>
+        </form>
+    </div>
+
+    <div id="toast"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         (function() {
-// Scope everything to a IIFE to avoid global namespace pollution
-(function() {
-    'use strict';
+            'use strict';
 
-    const PRODUCTS = [
-        { id: 1, name: "Crinkle Cookies", price: 85, cat: "Pastries", emoji: "🍪" },
-        { id: 2, name: "Butter Croissant", price: 95, cat: "Pastries", emoji: "🥐" },
-        { id: 3, name: "Artisan Loaf", price: 120, cat: "Breads", emoji: "🍞" },
-        { id: 4, name: "Custom Cake", price: 650, cat: "Cakes", emoji: "🎂" },
-        { id: 5, name: "Chocolate Muffin", price: 80, cat: "Pastries", emoji: "🧁" },
-        { id: 6, name: "Iced Latte", price: 110, cat: "Drinks", emoji: "☕" }
-    ];
+            const PRODUCTS = [
+                { id: 1, name: "Crinkle Cookies", price: 85, cat: "Pastries", emoji: "🍪" },
+                { id: 2, name: "Butter Croissant", price: 95, cat: "Pastries", emoji: "🥐" },
+                { id: 3, name: "Artisan Loaf", price: 120, cat: "Breads", emoji: "🍞" },
+                { id: 4, name: "Custom Cake", price: 650, cat: "Cakes", emoji: "🎂" },
+                { id: 5, name: "Chocolate Muffin", price: 80, cat: "Pastries", emoji: "🧁" },
+                { id: 6, name: "Iced Latte", price: 110, cat: "Drinks", emoji: "☕" }
+            ];
 
-    const BRANCHES = [
-        { name: "Tumaga Branch", addr: "Veterans Ave Ext, Zamboanga", coords: [6.9328, 122.0785], open: 10, close: 22 },
-        { name: "Veterans Branch", addr: "Veterans Avenue, Zamboanga", coords: [6.9185, 122.0742], open: 9, close: 18 }
-    ];
+            const BRANCHES = [
+                { name: "Tumaga Branch", addr: "Veterans Ave Ext, Zamboanga", coords: [6.9328, 122.0785], open: 10, close: 22 },
+                { name: "Veterans Branch", addr: "Veterans Avenue, Zamboanga", coords: [6.9185, 122.0742], open: 9, close: 18 }
+            ];
 
-    let cart = JSON.parse(localStorage.getItem('soul_bake_cart')) || {};
+            let cart = JSON.parse(localStorage.getItem('soul_bake_cart')) || {};
 
-    const dom = {
-        productGrid: document.getElementById('productGrid'),
-        branchGrid: document.getElementById('branchGrid'),
-        cartItems: document.getElementById('cartItems'),
-        cartBadge: document.getElementById('cartBadge'),
-        cartTotal: document.getElementById('cartTotal'),
-        formItems: document.getElementById('formItems'),
-        formTotal: document.getElementById('formTotal'),
-        orderForm: document.getElementById('orderForm'),
-        toast: document.getElementById('toast')
-    };
+            const dom = {
+                productGrid: document.getElementById('productGrid'),
+                branchGrid: document.getElementById('branchGrid'),
+                cartItems: document.getElementById('cartItems'),
+                cartBadge: document.getElementById('cartBadge'),
+                cartTotal: document.getElementById('cartTotal'),
+                formItems: document.getElementById('formItems'),
+                formTotal: document.getElementById('formTotal'),
+                orderForm: document.getElementById('orderForm'),
+                toast: document.getElementById('toast'),
+                navbar: document.getElementById('navbar')
+            };
 
-    function init() {
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-        initMap();
-        renderMenu('All');
-        renderBranches();
-        updateCart();
-        attachEventListeners();
-    }
-
-    function initMap() {
-        const map = L.map('map').setView([6.9250, 122.0760], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
-        BRANCHES.forEach(loc => {
-            L.marker(loc.coords).addTo(map).bindPopup(`<b>${loc.name}</b><br>${loc.addr}`);
-        });
-    }
-
-    window.addToCart = function(id) { // Exposed to HTML
-        const p = PRODUCTS.find(x => x.id === id);
-        if (cart[id]) cart[id].qty++;
-        else cart[id] = { ...p, qty: 1 };
-        saveAndUpdate();
-        showToast(`Added ${p.name}`);
-    };
-
-    window.changeQty = function(id, delta) { // Exposed to HTML
-        if (!cart[id]) return;
-        cart[id].qty += delta;
-        if (cart[id].qty <= 0) delete cart[id];
-        saveAndUpdate();
-    };
-
-    function saveAndUpdate() {
-        localStorage.setItem('soul_bake_cart', JSON.stringify(cart));
-        updateCart();
-    }
-
-    function updateCart() {
-        let html = '';
-        let total = 0;
-        let count = 0;
-
-        Object.values(cart).forEach(item => {
-            html += `
-                <div class="cart-item">
-                    <div class="cart-item-emoji">${item.emoji}</div>
-                    <div style="flex:1">
-                        <p style="font-weight:700; font-size:0.9rem;">${item.name}</p>
-                        <p style="font-size:0.8rem;">₱${item.price.toFixed(2)}</p>
-                        <div style="display:flex; align-items:center; gap:10px; margin-top:5px;">
-                            <button class="qty-btn" onclick="changeQty(${item.id}, -1)">-</button>
-                            <span>${item.qty}</span>
-                            <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
-                        </div>
-                    </div>
-                </div>`;
-            total += item.price * item.qty;
-            count += item.qty;
-        });
-
-        dom.cartItems.innerHTML = html || '<p style="text-align:center; opacity:0.5;">Bag is empty 🥐</p>';
-        dom.cartBadge.innerText = count;
-        dom.cartBadge.style.display = count > 0 ? 'flex' : 'none';
-        dom.cartTotal.innerText = `₱${total.toFixed(2)}`;
-        
-        // Update hidden fields for Formspree
-        dom.formItems.value = Object.values(cart).map(i => `${i.name} (x${i.qty})`).join('\n');
-        dom.formTotal.value = `₱${total.toFixed(2)}`;
-    }
-
-    function showToast(msg) {
-        dom.toast.innerText = msg;
-        dom.toast.style.display = 'block';
-        setTimeout(() => dom.toast.style.display = 'none', 3000);
-    }
-
-    function attachEventListeners() {
-        dom.orderForm.onsubmit = (e) => {
-            if (Object.keys(cart).length === 0) {
-                e.preventDefault();
-                showToast("Cart is empty!");
+            function init() {
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                initMap();
+                renderMenu('All');
+                renderBranches();
+                updateCart();
+                
+                window.onscroll = () => {
+                    if (window.scrollY > 50) dom.navbar.classList.add('scrolled');
+                    else dom.navbar.classList.remove('scrolled');
+                };
             }
-            // Logic to clear cart after successful submit could go here 
-            // (Note: Formspree redirects, so cart clears on next load anyway)
-        };
-    }
 
-    window.onload = init;
-})();
-        })(); // Make sure this closing bracket and semicolon are here!
+            function initMap() {
+                const map = L.map('map').setView([6.9250, 122.0760], 14);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap'
+                }).addTo(map);
+
+                BRANCHES.forEach(loc => {
+                    L.marker(loc.coords).addTo(map).bindPopup(`<b>${loc.name}</b><br>${loc.addr}`);
+                });
+            }
+
+            function renderMenu(filter) {
+                const items = filter === 'All' ? PRODUCTS : PRODUCTS.filter(p => p.cat === filter);
+                dom.productGrid.innerHTML = items.map(p => `
+                    <div class="card">
+                        <div class="emoji">${p.emoji}</div>
+                        <h3>${p.name}</h3>
+                        <p style="color: var(--accent-caramel); font-weight:700;">₱${p.price.toFixed(2)}</p>
+                        <button class="btn" onclick="addToCart(${p.id})" style="margin-top:15px; font-size: 0.8rem;">Add to Order</button>
+                    </div>
+                `).join('');
+            }
+
+            function renderBranches() {
+                dom.branchGrid.innerHTML = BRANCHES.map(b => `
+                    <div class="card" style="text-align: left;">
+                        <h4 style="color: var(--warm-brown);">${b.name}</h4>
+                        <p style="font-size: 0.85rem; opacity: 0.8;">${b.addr}</p>
+                        <p style="font-size: 0.8rem; margin-top: 10px;">🕒 ${b.open}:00 - ${b.close}:00</p>
+                    </div>
+                `).join('');
+            }
+
+            window.addToCart = function(id) {
+                const p = PRODUCTS.find(x => x.id === id);
+                if (cart[id]) cart[id].qty++;
+                else cart[id] = { ...p, qty: 1 };
+                saveAndUpdate();
+                showToast(`Added ${p.name}`);
+            };
+
+            window.changeQty = function(id, delta) {
+                if (!cart[id]) return;
+                cart[id].qty += delta;
+                if (cart[id].qty <= 0) delete cart[id];
+                saveAndUpdate();
+            };
+
+            function saveAndUpdate() {
+                localStorage.setItem('soul_bake_cart', JSON.stringify(cart));
+                updateCart();
+            }
+
+            function updateCart() {
+                let html = '';
+                let total = 0;
+                let count = 0;
+
+                Object.values(cart).forEach(item => {
+                    html += `
+                        <div style="display:flex; gap:15px; margin-bottom:20px; align-items:center;">
+                            <div style="font-size:2rem;">${item.emoji}</div>
+                            <div style="flex:1">
+                                <p style="font-weight:700;">${item.name}</p>
+                                <p style="font-size:0.8rem;">₱${item.price.toFixed(2)}</p>
+                                <div style="display:flex; align-items:center; gap:10px; margin-top:5px;">
+                                    <button onclick="changeQty(${item.id}, -1)" style="width:25px; height:25px; border-radius:50%; border:1px solid #ddd; cursor:pointer;">-</button>
+                                    <span>${item.qty}</span>
+                                    <button onclick="changeQty(${item.id}, 1)" style="width:25px; height:25px; border-radius:50%; border:1px solid #ddd; cursor:pointer;">+</button>
+                                </div>
+                            </div>
+                        </div>`;
+                    total += item.price * item.qty;
+                    count += item.qty;
+                });
+
+                dom.cartItems.innerHTML = html || '<p style="text-align:center; opacity:0.5; margin-top:50px;">Bag is empty 🥐</p>';
+                dom.cartBadge.innerText = count;
+                dom.cartTotal.innerText = `₱${total.toFixed(2)}`;
+                dom.formItems.value = Object.values(cart).map(i => `${i.name} (x${i.qty})`).join('\n');
+                dom.formTotal.value = `₱${total.toFixed(2)}`;
+            }
+
+            function showToast(msg) {
+                dom.toast.innerText = msg;
+                dom.toast.style.display = 'block';
+                setTimeout(() => dom.toast.style.display = 'none', 3000);
+            }
+
+            window.onload = init;
+        })();
     </script>
 </body>
 </html>
