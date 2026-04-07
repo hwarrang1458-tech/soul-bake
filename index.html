@@ -1,4 +1,17 @@
-// Scope everything to a IIFE to avoid global namespace pollution
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    </head>
+<body>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // Paste the long block of code I gave you here
+        (function() {
+            'use strict';
+            const PRODUCTS = [ ... ];
+            // Scope everything to a IIFE to avoid global namespace pollution
 (function() {
     'use strict';
 
@@ -122,3 +135,8 @@
 
     window.onload = init;
 })();
+        })();
+    </script>
+
+</body>
+</html>
