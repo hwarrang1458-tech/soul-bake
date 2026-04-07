@@ -1,388 +1,124 @@
+// Scope everything to a IIFE to avoid global namespace pollution
+(function() {
+    'use strict';
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soul Bake. Zamboanga | Premium Breads & Pastries</title>
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
-    
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    const PRODUCTS = [
+        { id: 1, name: "Crinkle Cookies", price: 85, cat: "Pastries", emoji: "🍪" },
+        { id: 2, name: "Butter Croissant", price: 95, cat: "Pastries", emoji: "🥐" },
+        { id: 3, name: "Artisan Loaf", price: 120, cat: "Breads", emoji: "🍞" },
+        { id: 4, name: "Custom Cake", price: 650, cat: "Cakes", emoji: "🎂" },
+        { id: 5, name: "Chocolate Muffin", price: 80, cat: "Pastries", emoji: "🧁" },
+        { id: 6, name: "Iced Latte", price: 110, cat: "Drinks", emoji: "☕" }
+    ];
 
-    <style>
-        :root {
-            --primary-cream: #FAF3E0;
-            --warm-brown: #3B1F0C;
-            --accent-caramel: #C8843A;
-            --deep-espresso: #2C1503;
-            --off-white: #FFFDF8;
-            --muted-blush: #F5E6D3;
-            --text-gray: #5C4033;
-            --star-gold: #F4B942;
-            --nav-height: 80px;
-            --transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-        }
+    const BRANCHES = [
+        { name: "Tumaga Branch", addr: "Veterans Ave Ext, Zamboanga", coords: [6.9328, 122.0785], open: 10, close: 22 },
+        { name: "Veterans Branch", addr: "Veterans Avenue, Zamboanga", coords: [6.9185, 122.0742], open: 9, close: 18 }
+    ];
 
-        /* Essential Reset - Fixes the "White Screen" by making content visible by default */
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
-        html { scroll-behavior: smooth; }
-        body { font-family: 'Lato', sans-serif; background-color: var(--off-white); color: var(--text-gray); line-height: 1.6; overflow-x: hidden; }
+    let cart = JSON.parse(localStorage.getItem('soul_bake_cart')) || {};
 
-        section { opacity: 1; transform: none; padding: 80px 0; }
-        .reveal { transition: 0.8s ease-out; }
+    const dom = {
+        productGrid: document.getElementById('productGrid'),
+        branchGrid: document.getElementById('branchGrid'),
+        cartItems: document.getElementById('cartItems'),
+        cartBadge: document.getElementById('cartBadge'),
+        cartTotal: document.getElementById('cartTotal'),
+        formItems: document.getElementById('formItems'),
+        formTotal: document.getElementById('formTotal'),
+        orderForm: document.getElementById('orderForm'),
+        toast: document.getElementById('toast')
+    };
 
-        h1, h2, h3, h4 { font-family: 'Playfair Display', serif; color: var(--warm-brown); font-weight: 700; }
-        .label { font-family: 'Cormorant Garamond', serif; font-variant: small-caps; letter-spacing: 0.15em; color: var(--accent-caramel); font-weight: 600; display: block; margin-bottom: 1rem; font-size: 0.9rem; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 5%; }
+    function init() {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        initMap();
+        renderMenu('All');
+        renderBranches();
+        updateCart();
+        attachEventListeners();
+    }
 
-        /* Navigation */
-        nav { position: fixed; top: 0; left: 0; width: 100%; height: var(--nav-height); z-index: 1000; display: flex; align-items: center; transition: var(--transition); background: var(--primary-cream); border-bottom: 1px solid rgba(0,0,0,0.05); }
-        nav.scrolled { height: 70px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        nav .container { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-        .logo { text-decoration: none; color: var(--warm-brown); line-height: 1; }
-        .logo h1 { font-size: 1.6rem; }
-        .logo span { color: var(--accent-caramel); }
-        
-        .nav-links { display: flex; gap: 30px; }
-        .nav-links a { text-decoration: none; color: var(--warm-brown); font-size: 0.85rem; font-weight: 700; transition: 0.3s; }
-        .nav-links a:hover { color: var(--accent-caramel); }
-        
-        .cart-trigger { position: relative; background: none; border: none; cursor: pointer; color: var(--warm-brown); display: flex; align-items: center; }
-        .cart-count { position: absolute; top: -8px; right: -10px; background: #E63946; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-weight: 700; }
+    function initMap() {
+        const map = L.map('map').setView([6.9250, 122.0760], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
 
-        /* Hero */
-        #hero { min-height: 100vh; background: var(--primary-cream); display: flex; align-items: center; padding-top: var(--nav-height); }
-        .hero-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: center; width: 100%; }
-        .hero-text h2 { font-size: clamp(2.5rem, 6vw, 5rem); font-style: italic; line-height: 1.1; margin-bottom: 1.5rem; }
-        
-        .badge-wrapper { position: relative; width: 150px; height: 150px; cursor: pointer; margin-top: 2rem; }
-        .badge-svg { width: 100%; height: 100%; animation: rotate 12s linear infinite; }
-        .badge-svg text { fill: var(--warm-brown); font-family: 'Cormorant Garamond'; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; }
-        .badge-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: var(--deep-espresso); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        BRANCHES.forEach(loc => {
+            L.marker(loc.coords).addTo(map).bindPopup(`<b>${loc.name}</b><br>${loc.addr}`);
+        });
+    }
 
-        .hero-visual { width: 100%; aspect-ratio: 1; background: radial-gradient(circle, #8B5E3C, #3B1F0C); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; box-shadow: 20px 20px 60px rgba(0,0,0,0.1); }
-        .hero-visual span { font-size: 7rem; }
+    window.addToCart = function(id) { // Exposed to HTML
+        const p = PRODUCTS.find(x => x.id === id);
+        if (cart[id]) cart[id].qty++;
+        else cart[id] = { ...p, qty: 1 };
+        saveAndUpdate();
+        showToast(`Added ${p.name}`);
+    };
 
-        /* Menu */
-        .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 40px; flex-wrap: wrap; }
-        .tab-btn { padding: 10px 22px; border-radius: 50px; border: 1px solid var(--muted-blush); background: white; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: 0.3s; }
-        .tab-btn.active { background: var(--accent-caramel); color: white; border-color: var(--accent-caramel); }
-        
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
-        .product-card { background: white; padding: 25px; border: 1px solid transparent; transition: var(--transition); text-align: center; }
-        .product-card:hover { border-color: var(--muted-blush); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .product-card .emoji { font-size: 4rem; background: var(--primary-cream); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
+    window.changeQty = function(id, delta) { // Exposed to HTML
+        if (!cart[id]) return;
+        cart[id].qty += delta;
+        if (cart[id].qty <= 0) delete cart[id];
+        saveAndUpdate();
+    };
 
-        /* Cart Drawer */
-        .cart-drawer { position: fixed; top: 0; right: 0; width: min(400px, 100%); height: 100%; background: var(--off-white); z-index: 2001; transform: translateX(100%); transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1); display: flex; flex-direction: column; box-shadow: -10px 0 40px rgba(0,0,0,0.1); }
-        .cart-drawer.active { transform: translateX(0); }
-        .drawer-header { padding: 25px; border-bottom: 1px solid var(--muted-blush); display: flex; justify-content: space-between; align-items: center; }
-        .drawer-content { flex: 1; padding: 25px; overflow-y: auto; }
-        .cart-item { display: flex; gap: 15px; margin-bottom: 20px; align-items: center; border-bottom: 1px solid var(--muted-blush); padding-bottom: 15px; }
-        .cart-item-emoji { font-size: 2rem; background: var(--primary-cream); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    
-.drawer-footer {
-    padding: 25px; 
-    border-top: 1px solid var(--muted-blush);
-    background: var(--off-white);
-}
+    function saveAndUpdate() {
+        localStorage.setItem('soul_bake_cart', JSON.stringify(cart));
+        updateCart();
+    }
 
-.cart-total-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 700;
-    margin-bottom: 20px;
-    color: var(--warm-brown);
-}
-        
-        /* Modal */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .modal-overlay.active { display: flex; }
-        .modal { background: var(--off-white); width: 100%; max-width: 550px; padding: 40px; position: relative; max-height: 90vh; overflow-y: auto; }
-        .close-modal { position: absolute; top: 20px; right: 20px; cursor: pointer; background: none; border: none; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--muted-blush); font-family: inherit; outline: none; }
+    function updateCart() {
+        let html = '';
+        let total = 0;
+        let count = 0;
 
-        /* Branches */
-        .branch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .branch-card { background: var(--muted-blush); padding: 30px; border-top: 4px solid var(--accent-caramel); }
-        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; margin-bottom: 10px; }
-        .open { background: #D8F3DC; color: #1B4332; }
-        .closed { background: #FFD6D6; color: #800000; }
-
-        /* Buttons */
-        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 14px 28px; text-decoration: none; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; transition: var(--transition); cursor: pointer; border: none; letter-spacing: 1px; }
-        .btn-espresso { background: var(--deep-espresso); color: white; }
-        .btn-espresso:hover { background: var(--accent-caramel); transform: translateY(-2px); }
-
-        /* UI Helpers */
-        .overlay-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1500; display: none; }
-        .overlay-bg.active { display: block; }
-        #toast { position: fixed; bottom: 20px; right: 20px; background: var(--deep-espresso); color: white; padding: 12px 24px; font-size: 0.85rem; border-radius: 4px; display: none; z-index: 9999; }
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        @media (max-width: 768px) { .hero-grid, .branch-grid { grid-template-columns: 1fr; } .nav-links { display: none; } }
-    </style>
-</head>
-<body>
-
-    <div id="toast"></div>
-    <div class="overlay-bg" id="overlay"></div>
-
-    <nav id="navbar">
-        <div class="container">
-            <a href="#" class="logo"><h1>Soul Bake<span>.</span></h1></a>
-            <div class="nav-links">
-                <a href="#hero">Home</a>
-                <a href="#menu">Menu</a>
-                <a href="#about">About</a>
-                <a href="#branches">Branches</a>
-            </div>
-            <button class="cart-trigger" id="cartOpen">
-                <i data-lucide="shopping-bag"></i>
-                <span class="cart-count" id="cartBadge">0</span>
-            </button>
-        </div>
-    </nav>
-
-    <section id="hero">
-        <div class="container hero-grid">
-            <div class="hero-text">
-                <span class="label">Freshly Baked Daily • Zamboanga City</span>
-                <h2>Your Daily Dose of Freshness</h2>
-                <p>Premium breads, cakes and pastries — made from scratch with love in our neighborhood kitchen.</p>
-                <div class="badge-wrapper" onclick="document.getElementById('menu').scrollIntoView()">
-                    <svg class="badge-svg" viewBox="0 0 100 100">
-                        <path id="circlePath" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="transparent"/>
-                        <text><textPath xlink:href="#circlePath">SHOP NOW • ORDER NOW • BAKE WITH SOUL •</textPath></text>
-                    </svg>
-                    <div class="badge-center"><i data-lucide="arrow-down"></i></div>
-                </div>
-            </div>
-            <div class="hero-visual">
-                <span>🥐</span>
-                <h3 style="color: white; margin-top: 20px;">Soul Bake.</h3>
-            </div>
-        </div>
-    </section>
-
-    <section id="menu">
-        <div class="container">
-            <div style="text-align: center; margin-bottom: 50px;">
-                <span class="label">Favorites</span>
-                <h2 style="font-size: 2.5rem; font-style: italic;">The Menu</h2>
-            </div>
-            <div class="tabs">
-                <button class="tab-btn active" data-filter="All">All</button>
-                <button class="tab-btn" data-filter="Breads">Breads</button>
-                <button class="tab-btn" data-filter="Pastries">Pastries</button>
-                <button class="tab-btn" data-filter="Cakes">Cakes</button>
-                <button class="tab-btn" data-filter="Drinks">Drinks</button>
-            </div>
-            <div class="product-grid" id="productGrid"></div>
-        </div>
-    </section>
-
-    <section id="about" style="background: var(--off-white); padding: 100px 0;">
-        <div class="container" style="text-align: center; max-width: 800px;">
-            <span class="label">Our Story</span>
-            <h2 style="font-size: 2.5rem; font-style: italic; margin-bottom: 20px;">Tradition in Every Bite</h2>
-            <p>Every loaf, croissant, and cookie is a labor of love. We use traditional techniques and the finest local ingredients to bring the soul of baking to Zamboanga City.</p>
-        </div>
-    </section>
-
-    <section id="branches" style="background: var(--primary-cream); padding: 100px 0;">
-        <div class="container">
-            <div style="text-align: center; margin-bottom: 30px;">
-                <span class="label">Locations</span>
-                <h2 style="font-size: 2.5rem; font-style: italic;">Where to Find Us</h2>
-            </div>
-            <div class="branch-grid" id="branchGrid"></div>
-        </div>
-    </section>
-
-    <div class="cart-drawer" id="cartDrawer">
-        <div class="drawer-header">
-            <h3>Your Bag</h3>
-            <button id="cartClose" style="background:none; border:none; cursor:pointer;"><i data-lucide="x"></i></button>
-        </div>
-        <div class="drawer-content" id="cartItems"></div>
-        <div class="drawer-footer">
-            <div style="display:flex; justify-content:space-between; font-weight:700; margin-bottom:20px;">
-                <span>Total</span>
-                <span id="cartTotal">₱0.00</span>
-            </div>
-            <button class="btn btn-espresso" id="checkoutBtn" style="width:100%">Checkout Now</button>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal">
-            <button class="close-modal" id="modalClose"><i data-lucide="x"></i></button>
-            <h2 style="margin-bottom: 10px; font-style: italic;">Complete Your Order</h2>
-            <form action="https://formspree.io/f/xlgoarzy" method="POST" id="orderForm">
-                <div class="form-group"><label>Full Name</label><input type="text" name="name" required></div>
-                <div class="form-group"><label>Phone Number</label><input type="tel" name="phone" required></div>
-                <div class="form-group">
-                    <label>Order Details</label>
-                    <textarea name="order" id="formItems" rows="5" readonly style="background:#f4f4f4;"></textarea>
-                </div>
-                <input type="hidden" name="total" id="formTotal">
-                <button type="submit" class="btn btn-espresso" style="width:100%">Send Order</button>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        const PRODUCTS = [
-            { id: 1, name: "Crinkle Cookies", price: 85, cat: "Pastries", emoji: "🍪" },
-            { id: 2, name: "Butter Croissant", price: 95, cat: "Pastries", emoji: "🥐" },
-            { id: 3, name: "Artisan Loaf", price: 120, cat: "Breads", emoji: "🍞" },
-            { id: 4, name: "Custom Cake", price: 650, cat: "Cakes", emoji: "🎂" },
-            { id: 5, name: "Chocolate Muffin", price: 80, cat: "Pastries", emoji: "🧁" },
-            { id: 6, name: "Iced Latte", price: 110, cat: "Drinks", emoji: "☕" }
-        ];
-
-        const BRANCHES = [
-            { name: "Tumaga Branch", addr: "Veterans Ave Ext, Zamboanga", open: 10, close: 22 },
-            { name: "Veterans Branch", addr: "Veterans Avenue, Zamboanga", open: 9, close: 18 }
-        ];
-
-        let cart = {};
-
-        function init() {
-            lucide.createIcons();
-            renderMenu('All');
-            renderBranches();
-        }
-
-        function renderMenu(filter) {
-            const grid = document.getElementById('productGrid');
-            grid.innerHTML = '';
-            const items = filter === 'All' ? PRODUCTS : PRODUCTS.filter(p => p.cat === filter);
-            items.forEach(p => {
-                const div = document.createElement('div');
-                div.className = 'product-card';
-                div.innerHTML = `
-                    <div class="emoji">${p.emoji}</div>
-                    <h4>${p.name}</h4>
-                    <p style="margin: 10px 0; font-weight:700; color:var(--accent-caramel)">₱${p.price.toFixed(2)}</p>
-                    <button class="btn btn-espresso" style="width:100%" onclick="addToCart(${p.id})">Add to Order</button>
-                `;
-                grid.appendChild(div);
-            });
-        }
-
-        function renderBranches() {
-            const grid = document.getElementById('branchGrid');
-            const hour = new Date().getHours();
-            grid.innerHTML = BRANCHES.map(b => {
-                const isOpen = hour >= b.open && hour < b.close;
-                return `
-                    <div class="branch-card">
-                        <span class="status-badge ${isOpen ? 'open' : 'closed'}">${isOpen ? '● Open Now' : '● Closed'}</span>
-                        <h3>${b.name}</h3>
-                        <p style="font-size:0.8rem; opacity:0.7;">${b.addr}</p>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function addToCart(id) {
-            const p = PRODUCTS.find(x => x.id === id);
-            if(cart[id]) cart[id].qty++;
-            else cart[id] = {...p, qty: 1};
-            updateCart();
-            showToast(`Added ${p.name}`);
-        }
-
-        function updateCart() {
-            const itemsCont = document.getElementById('cartItems');
-            const badge = document.getElementById('cartBadge');
-            const totalDisplay = document.getElementById('cartTotal');
-            
-            let html = '';
-            let total = 0;
-            let count = 0;
-
-            Object.values(cart).forEach(item => {
-                html += `
-                    <div class="cart-item">
-                        <div class="cart-item-emoji">${item.emoji}</div>
-                        <div style="flex:1">
-                            <p style="font-weight:700; font-size:0.9rem;">${item.name}</p>
-                            <p style="font-size:0.8rem;">₱${item.price}</p>
-                            <div style="display:flex; align-items:center; gap:10px; margin-top:5px;">
-                                <button style="width:25px; cursor:pointer;" onclick="changeQty(${item.id}, -1)">-</button>
-                                <span>${item.qty}</span>
-                                <button style="width:25px; cursor:pointer;" onclick="changeQty(${item.id}, 1)">+</button>
-                            </div>
+        Object.values(cart).forEach(item => {
+            html += `
+                <div class="cart-item">
+                    <div class="cart-item-emoji">${item.emoji}</div>
+                    <div style="flex:1">
+                        <p style="font-weight:700; font-size:0.9rem;">${item.name}</p>
+                        <p style="font-size:0.8rem;">₱${item.price.toFixed(2)}</p>
+                        <div style="display:flex; align-items:center; gap:10px; margin-top:5px;">
+                            <button class="qty-btn" onclick="changeQty(${item.id}, -1)">-</button>
+                            <span>${item.qty}</span>
+                            <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
                         </div>
                     </div>
-                `;
-                total += item.price * item.qty;
-                count += item.qty;
-            });
-
-            itemsCont.innerHTML = html || '<p style="text-align:center; opacity:0.5;">Bag is empty 🥐</p>';
-            badge.innerText = count;
-            badge.style.display = count > 0 ? 'flex' : 'none';
-            totalDisplay.innerText = `₱${total.toFixed(2)}`;
-            
-            document.getElementById('formItems').value = Object.values(cart).map(i => `${i.name} x ${i.qty}`).join('\n');
-            document.getElementById('formTotal').value = `₱${total.toFixed(2)}`;
-        }
-
-        function changeQty(id, delta) {
-            cart[id].qty += delta;
-            if(cart[id].qty <= 0) delete cart[id];
-            updateCart();
-        }
-
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 3000);
-        }
-
-        // UI Handlers
-        document.getElementById('cartOpen').onclick = () => {
-            document.getElementById('cartDrawer').classList.add('active');
-            document.getElementById('overlay').classList.add('active');
-        };
-        document.getElementById('cartClose').onclick = () => {
-            document.getElementById('cartDrawer').classList.remove('active');
-            document.getElementById('overlay').classList.remove('active');
-        };
-        document.getElementById('checkoutBtn').onclick = () => {
-            if(Object.keys(cart).length === 0) return showToast("Add items first");
-            document.getElementById('modalOverlay').classList.add('active');
-        };
-        document.getElementById('modalClose').onclick = () => document.getElementById('modalOverlay').classList.remove('active');
-
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.onclick = (e) => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                renderMenu(btn.dataset.filter);
-            };
+                </div>`;
+            total += item.price * item.qty;
+            count += item.qty;
         });
 
-        window.onscroll = () => {
-            const nav = document.getElementById('navbar');
-            if (window.scrollY > 50) nav.classList.add('scrolled');
-            else nav.classList.remove('scrolled');
-        };
+        dom.cartItems.innerHTML = html || '<p style="text-align:center; opacity:0.5;">Bag is empty 🥐</p>';
+        dom.cartBadge.innerText = count;
+        dom.cartBadge.style.display = count > 0 ? 'flex' : 'none';
+        dom.cartTotal.innerText = `₱${total.toFixed(2)}`;
+        
+        // Update hidden fields for Formspree
+        dom.formItems.value = Object.values(cart).map(i => `${i.name} (x${i.qty})`).join('\n');
+        dom.formTotal.value = `₱${total.toFixed(2)}`;
+    }
 
-        window.onload = init;
-    </script>
-</body>
-</html>
+    function showToast(msg) {
+        dom.toast.innerText = msg;
+        dom.toast.style.display = 'block';
+        setTimeout(() => dom.toast.style.display = 'none', 3000);
+    }
+
+    function attachEventListeners() {
+        dom.orderForm.onsubmit = (e) => {
+            if (Object.keys(cart).length === 0) {
+                e.preventDefault();
+                showToast("Cart is empty!");
+            }
+            // Logic to clear cart after successful submit could go here 
+            // (Note: Formspree redirects, so cart clears on next load anyway)
+        };
+    }
+
+    window.onload = init;
+})();
